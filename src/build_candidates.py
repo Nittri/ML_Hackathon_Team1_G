@@ -11,6 +11,7 @@ from data_io import load_track, load_nodes, load_arcs, load_route, make_projecto
 
 RADIUS = 50      # metres: arcs closer than this to a GPS point are candidates
 MAX_CAND = 30    # keep at most the 30 nearest candidates per point
+HEAD_WINDOW = 3  # heading uses the point this many steps back and this many ahead
 
 
 def angle_diff(a, b):
@@ -53,15 +54,24 @@ def build_trip(folder, trip_id):
     along_frac = shapely.line_locate_point(lines[arc_idx], points[pt_idx], normalized=True)
     arc_len = shapely.length(lines[arc_idx])
 
-    # direction of each arc, and direction the vehicle is moving (to the next point)
+    # direction of each arc (from its start node to its end node)
     d = seg[arc_idx, 1, :] - seg[arc_idx, 0, :]
     arc_bearing = np.degrees(np.arctan2(d[:, 1], d[:, 0]))
+
+    # step from each point to the next (used for speed)
     step = np.diff(pts_xy, axis=0)
     step = np.vstack([step, step[-1:]])          # last point reuses the previous step
     step_len = np.hypot(step[:, 0], step[:, 1])
-    heading = np.degrees(np.arctan2(step[:, 1], step[:, 0]))
+
+    # smoother heading: from HEAD_WINDOW points back to HEAD_WINDOW points ahead
+    n = len(pts_xy)
+    back = np.clip(np.arange(n) - HEAD_WINDOW, 0, n - 1)
+    ahead = np.clip(np.arange(n) + HEAD_WINDOW, 0, n - 1)
+    wide = pts_xy[ahead] - pts_xy[back]
+    wide_len = np.hypot(wide[:, 0], wide[:, 1])
+    heading = np.degrees(np.arctan2(wide[:, 1], wide[:, 0]))
     heading_diff = angle_diff(heading[pt_idx], arc_bearing)
-    heading_diff[step_len[pt_idx] < 1] = 90      # parked: heading means nothing, use neutral 90
+    heading_diff[wide_len[pt_idx] < 3] = 90      # almost no movement: heading means nothing
 
     # speed (m/s) from the previous point to this one; 0 for the first point
     dt = np.diff(track["t"].values)
