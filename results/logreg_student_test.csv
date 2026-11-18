@@ -1,0 +1,2 @@
+mode,best_C,train_trips,log_loss,macro_f1,top1,fit_s,infer_s
+all,10.0,80,0.20417713065342422,0.7992475617215147,0.8498928552762244,0.47,0.03
