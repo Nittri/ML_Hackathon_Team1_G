@@ -1,0 +1,46 @@
+{
+  "selected_model": "Random Forest",
+  "selection_metric": "grouped training cross-validation macro F1",
+  "best_params": {
+    "n_estimators": 200,
+    "max_depth": 24,
+    "min_samples_leaf": 6
+  },
+  "best_cv_macro_f1": 0.9090671210492135,
+  "tuning_trials": 1,
+  "tuning_seconds": 55.23885119998886,
+  "tuned_student_test_metrics": {
+    "arc_accuracy": 0.9941850724974465,
+    "arc_precision": 0.7852206273258905,
+    "arc_recall": 0.9168218497827436,
+    "macro_f1": 0.9214850875667588,
+    "observation_top1_accuracy": 0.2115866388308977,
+    "hmm_observation_accuracy": 0.5455114822546973,
+    "candidate_miss_rate": 0.12932392669014142,
+    "classifier_route_continuity": 0.9306148672098091,
+    "hmm_route_continuity": 0.9549590145475764,
+    "route_decoding_seconds": 10.717189200004213,
+    "log_loss": 0.016367886749019383
+  },
+  "tuned_inference_seconds": 1.563392500000191,
+  "comparison": {
+    "model": "Random Forest",
+    "cv_macro_f1_untuned": 0.9137004553680705,
+    "cv_macro_f1_tuned": 0.9090671210492135,
+    "student_observation_top1_accuracy_untuned": 0.20548016701461377,
+    "student_observation_top1_accuracy_tuned": 0.2115866388308977,
+    "student_arc_macro_f1_untuned": 0.925952252392693,
+    "student_arc_macro_f1_tuned": 0.9214850875667588,
+    "student_log_loss_untuned": 0.013893061308809823,
+    "student_log_loss_tuned": 0.016367886749019383,
+    "inference_seconds_untuned": 0.8315080999891507,
+    "inference_seconds_tuned": 1.563392500000191
+  },
+  "objective": "maximize mean grouped-CV edge macro F1",
+  "group_cv_folds": 2,
+  "search_space": {
+    "n_estimators": "integer 100-350, step 50",
+    "max_depth": "integer 8-24",
+    "min_samples_leaf": "integer 1-8"
+  }
+}
