@@ -50,12 +50,25 @@ features. Invalid GPS rows are removed and remaining points are stably ordered
 by timestamp; large gaps and implausible speeds are retained as observations
 and represented by features rather than silently discarded.
 
-The completed measured report is committed at
-`reports\PathSnap_model_report.pdf`, with its interactive Folium companion at
-`reports\PathSnap_student_test_map.html` and the underlying comparison/tuning
-tables beside them. This report reflects the bounded run recorded in
+The completed measured report is available as
+`reports\PathSnap_model_report.pdf` and editable
+`reports\PathSnap_Technical_Report.docx`. Its interactive Folium companion is
+`reports\PathSnap_student_test_map.html`, with comparison/tuning tables and
+figures beside them. The report reflects the bounded run recorded in
 `reports\run_summary.json` (2 CV folds, 1 tuning trial, 1 GNN epoch); it is not
-a full-default benchmark. The command above uses the documented full defaults.
+a full-default benchmark. The PDF explicitly identifies the live Laptop B UI
+and receiving-terminal screenshots as evidence still to capture during the
+evaluator demo.
+
+To rebuild the report and its plots after rerunning the experiment:
+
+```powershell
+python -m scripts.build_technical_report
+```
+
+The report builder uses the train/student-test quality summaries and
+experiment artifacts. Do not provide evaluator data to the report-generation
+command.
 
 Each training run writes model comparison CSVs, tuning logs, plots, prediction
 CSVs, and saved model artifacts beneath `results\experiments`. Those generated

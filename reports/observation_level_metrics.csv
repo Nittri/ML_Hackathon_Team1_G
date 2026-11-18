@@ -1,0 +1,13 @@
+model,method,student_observation_macro_f1_trip_mean
+XGBoost (binary logistic),Classifier-only,0.11072177086198762
+XGBoost (binary logistic),HMM/Viterbi,0.4726944292037719
+Random Forest,Classifier-only,0.0960533821618962
+Random Forest,HMM/Viterbi,0.4542428797195014
+Graph-kernel SVM,Classifier-only,0.021123378827419454
+Graph-kernel SVM,HMM/Viterbi,0.1572784302970241
+GNN,Classifier-only,0.11058619789077033
+GNN,HMM/Viterbi,0.4066611850487886
+LightGBM,Classifier-only,0.11219449721347349
+LightGBM,HMM/Viterbi,0.4756828449225253
+Random Forest (tuned),Classifier-only,0.09832662589757474
+Random Forest (tuned),HMM/Viterbi,0.4654630315274427
