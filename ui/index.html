@@ -58,7 +58,7 @@
       const minLon = Math.min(...lons), maxLon = Math.max(...lons);
       const gpsLayer = result.gps_points.map((point) =>
         `<circle cx="${(point.lon - minLon) / Math.max(maxLon - minLon, 1e-8) * 1000}" ` +
-        `cy="${1000 - (point.lat - minLat) / Math.max(maxLat - minLat, 1e-8) * 460}" ` +
+        `cy="${460 - (point.lat - minLat) / Math.max(maxLat - minLat, 1e-8) * 460}" ` +
         `r="3" fill="#1f77b4"><title>GPS observation</title></circle>`).join("");
       const routeLayer = result.predicted_route_coordinates.map((segment) => {
         const points = segment.map((point) =>
