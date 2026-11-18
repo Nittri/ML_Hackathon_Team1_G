@@ -42,6 +42,10 @@ class ApiTests(unittest.TestCase):
             self.assertEqual(len(response["predicted_arc_ids"]), 3)
             self.assertNotIn("reference_arc_ids", response)
             self.assertNotIn("reference_route", response)
+            for segment in response["predicted_route_coordinates"]:
+                for latitude, longitude in segment:
+                    self.assertLessEqual(abs(latitude), 90.0)
+                    self.assertLessEqual(abs(longitude), 180.0)
 
 
 if __name__ == "__main__":

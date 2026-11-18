@@ -15,6 +15,7 @@ import numpy as np
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
+from pyproj import Transformer
 from sklearn.metrics import accuracy_score, f1_score
 
 from .data_io import find_trips, load_trip
@@ -157,13 +158,18 @@ def pd_numeric_route(route: Any) -> np.ndarray:
 
 
 def _route_coordinates(trip: Any, arc_ids: np.ndarray) -> list[list[float]]:
+    transformer = Transformer.from_crs(
+        f"EPSG:{trip.epsg}", "EPSG:4326", always_xy=True
+    )
     coordinates = []
     for arc_id in arc_ids:
         start, end = trip.arcs[int(arc_id)]
+        start_lon, start_lat = transformer.transform(*trip.node_xy[start])
+        end_lon, end_lat = transformer.transform(*trip.node_xy[end])
         coordinates.append(
             [
-                [float(trip.node_xy[start, 1]), float(trip.node_xy[start, 0])],
-                [float(trip.node_xy[end, 1]), float(trip.node_xy[end, 0])],
+                [float(start_lat), float(start_lon)],
+                [float(end_lat), float(end_lon)],
             ]
         )
     return coordinates
