@@ -33,7 +33,6 @@ from .preprocessing import (
     balanced_edge_indices,
     load_partition,
 )
-from .report import generate_report
 
 SEED = 42
 MODEL_NAMES = (
@@ -731,8 +730,6 @@ def run_experiments(
     (output_dir / "run_summary.json").write_text(
         json.dumps(run_summary, indent=2), encoding="utf-8"
     )
-    report_path = generate_report(output_dir)
-    print(f"Experiment report: {report_path}")
     return comparison
 
 

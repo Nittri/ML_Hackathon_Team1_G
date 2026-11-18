@@ -50,12 +50,16 @@ features. Invalid GPS rows are removed and remaining points are stably ordered
 by timestamp; large gaps and implausible speeds are retained as observations
 and represented by features rather than silently discarded.
 
-`results\experiments` contains the model comparison, grouped-CV metrics,
-Bayesian trial log and tuned-vs-untuned comparison, run configuration, a
-consolidated PDF report, model comparison plots, and a Folium HTML map for a
-student-test trip. Per-model prediction CSVs and saved model artifacts are
-written beneath the same output directory. These generated outputs are not
-committed by default; rerun the command to reproduce them.
+The completed measured report is committed at
+`reports\PathSnap_model_report.pdf`, with its interactive Folium companion at
+`reports\PathSnap_student_test_map.html` and the underlying comparison/tuning
+tables beside them. This report reflects the bounded run recorded in
+`reports\run_summary.json` (2 CV folds, 1 tuning trial, 1 GNN epoch); it is not
+a full-default benchmark. The command above uses the documented full defaults.
+
+Each training run writes model comparison CSVs, tuning logs, plots, prediction
+CSVs, and saved model artifacts beneath `results\experiments`. Those generated
+run outputs are ignored by Git; rerun the command to reproduce them.
 
 ## Route decoding
 
