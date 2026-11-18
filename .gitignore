@@ -1,4 +1,11 @@
 data/
+results/experiments/*.csv
+results/experiments/*.json
+results/experiments/*.png
+results/experiments/*.html
+results/experiments/*.pdf
+results/experiments/models/
+results/experiments/predictions/
 __pycache__/
 .ipynb_checkpoints/
 .venv/
