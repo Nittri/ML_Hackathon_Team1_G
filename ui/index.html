@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PathSnap Evaluator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<style>
+  :root { --bg:#fff; --fg:#1a1a1a; --panel:#f3f4f6; --line:#d1d5db; --accent:#2563eb; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#111418; --fg:#e8e8e8; --panel:#1b2027; --line:#333b46; --accent:#60a5fa; }
+  }
+  html, body { height:100%; margin:0; }
+  body { background:var(--bg); color:var(--fg); font-family:system-ui, sans-serif; display:flex; flex-direction:column; }
+  header { display:flex; align-items:center; justify-content:space-between; padding:10px 16px; border-bottom:1px solid var(--line); }
+  h1 { font-size:18px; margin:0; }
+  #status { font-size:13px; padding:4px 10px; border:1px solid var(--line); border-radius:6px; background:var(--panel); }
+  main { flex:1; display:flex; min-height:0; }
+  #list { width:240px; overflow-y:auto; border-right:1px solid var(--line); padding:8px; box-sizing:border-box; }
+  .trip { padding:8px 10px; margin-bottom:6px; border:1px solid var(--line); border-radius:6px; background:var(--panel); cursor:pointer; font-size:14px; }
+  .trip.active { border-color:var(--accent); outline:1px solid var(--accent); }
+  .trip small { display:block; opacity:.7; }
+  #map { flex:1; }
+  #info { font-size:12px; padding:6px 10px; border-top:1px solid var(--line); }
+</style>
+</head>
+<body>
+<header>
+  <h1>PathSnap evaluator</h1>
+  <div id="status">API: checking…</div>
+</header>
+<main>
+  <div id="list"></div>
+  <div id="map"></div>
+</main>
+<div id="info">Green = route predicted by the server. Blue = GPS points. No ground truth is ever sent to this page.</div>
+
+<script>
+// ---------- settings ----------
+// Mock mode by default. For live mode open the page like:  index.html?api=http://192.168.1.20:8000
+// Assumed contract (agree this with Person D):
+//   GET /trips      -> [{ "id": "00000101", "n_points": 1200 }, ...]   (ten evaluator trips)
+//   GET /trips/{id} -> { "id": "...", "points": [{"lat":..,"lon":..}, ...],
+//                        "route": [[lat,lon], [lat,lon], ...] }       (predicted route only)
+const API = new URLSearchParams(location.search).get("api") || "";
+
+// ---------- map ----------
+const map = L.map("map").setView([12.97, 77.59], 13);
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+            { maxZoom: 19, attribution: "&copy; OpenStreetMap contributors" }).addTo(map);
+let layer = L.layerGroup().addTo(map);
+
+// ---------- mock data (fake, only so the UI can be tested) ----------
+function mockTrip(i) {
+  let seed = (i + 1) * 9301;                      // tiny seeded random generator
+  const rnd = () => (seed = (seed * 49297 + 233280) % 233280) / 233280;
+  let lat = 12.95 + i * 0.008, lon = 77.55 + i * 0.006, heading = rnd() * 6.28;
+  const route = [], points = [];
+  for (let s = 0; s < 60; s++) {
+    heading += (rnd() - 0.5) * 0.6;
+    lat += Math.sin(heading) * 0.0005;
+    lon += Math.cos(heading) * 0.0005;
+    route.push([lat, lon]);
+    points.push({ lat: lat + (rnd() - 0.5) * 0.0004, lon: lon + (rnd() - 0.5) * 0.0004 });
+  }
+  return { id: "mock-" + (i + 1), n_points: points.length, points, route };
+}
+const mockTrips = Array.from({ length: 10 }, (_, i) => mockTrip(i));
+
+// ---------- data access ----------
+async function getTrips() {
+  if (!API) return mockTrips.map(t => ({ id: t.id, n_points: t.n_points }));
+  const r = await fetch(API + "/trips");
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  return r.json();
+}
+async function getTrip(id) {
+  if (!API) return mockTrips.find(t => t.id === id);
+  const r = await fetch(API + "/trips/" + encodeURIComponent(id));
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  return r.json();
+}
+
+// ---------- drawing ----------
+async function showTrip(id, el) {
+  document.querySelectorAll(".trip").forEach(e => e.classList.remove("active"));
+  el.classList.add("active");
+  try {
+    const t = await getTrip(id);
+    layer.clearLayers();
+    const line = L.polyline(t.route, { color: "green", weight: 5, opacity: 0.85 }).addTo(layer);
+    t.points.forEach(p => L.circleMarker([p.lat, p.lon],
+      { radius: 3, color: "blue", fillOpacity: 0.8 }).addTo(layer));
+    map.fitBounds(line.getBounds().pad(0.2));
+  } catch (e) {
+    document.getElementById("info").textContent = "Could not load trip " + id + ": " + e.message;
+  }
+}
+
+async function init() {
+  const status = document.getElementById("status");
+  const list = document.getElementById("list");
+  try {
+    const trips = await getTrips();
+    status.textContent = API ? "API: live (" + API + ")" : "API: mock";
+    trips.forEach(t => {
+      const div = document.createElement("div");
+      div.className = "trip";
+      div.textContent = "Trip " + t.id;
+      const small = document.createElement("small");
+      small.textContent = t.n_points + " GPS points";
+      div.appendChild(small);
+      div.onclick = () => showTrip(t.id, div);
+      list.appendChild(div);
+    });
+  } catch (e) {
+    status.textContent = "API: error (" + e.message + ")";
+  }
+}
+init();
+</script>
+</body>
+</html>
