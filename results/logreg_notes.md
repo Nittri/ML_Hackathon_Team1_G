@@ -40,3 +40,22 @@ Top-1 is a tie (a difference of 0.0015); log loss and macro-F1 improve. CV score
 
 ## 6. Over/underfitting evidence
 Train top-1 is 0.862 and validation top-1 is 0.861 (train partition, grouped CV, C = 10). Train log loss is 0.2255 and validation is 0.2304. The gap is small, so there is no sign of overfitting. Possible underfitting (a limit of the model or features) is only circumstantial: scores plateau near 0.86 and no value of C changes them, and the errors split about evenly between "opposite direction" (48.5%) and "different road" (51.5%). We have not tested this against a more flexible model; the tree and boosting results will show it. student_test top-1 (0.850) is slightly below CV (0.861) while its log loss (0.204) is lower; with 10 trips and fold top-1 ranging from 0.818 to 0.893, differences this size are noise-level.
+
+## 7. What the model relies on (weights)
+Fitted on train (all 80 trips), C = 10, features standardised, so weights are comparable in size. Source: results/logreg_coefficients.csv.
+
+| feature | weight |
+|---|---|
+| dist_rank | -4.370 |
+| heading_diff | -1.358 |
+| dist_m | -1.128 |
+| arc_len | +0.196 |
+| speed | -0.187 |
+| along_frac | +0.001 |
+
+Intercept: -4.743.
+
+- Arcs that are closer (low dist_rank, small dist_m) and point the same way as the vehicle (small heading_diff) are more likely to be correct. dist_rank and dist_m both measure closeness and are correlated, so their weights share the work and should not be read separately.
+- along_frac has about zero weight: the model makes no linear use of it.
+- speed is the same for every candidate of one GPS point. In a linear model it shifts all candidates of that point equally, so it cannot change which candidate ranks first; it only affects the probability values (log loss, macro-F1). A linear model also cannot use interactions such as "a far road is fine when the car is slow". This follows from the model form and was not tested by removing the feature.
+- These weights come from the model trained on all 80 trips. The model trained without the 3 noisy trips was not inspected.
