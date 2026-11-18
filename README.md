@@ -7,7 +7,7 @@ zero-based ID. GPS observations are never aligned to network rows by index.
 
 ## Setup
 
-Use Python 3.10 or newer. In PowerShell, extract the development partitions into
+Use Python 3.10 or newer version. In PowerShell, extract the development partitions into
 the repository's ignored `data` directory and install the dependencies:
 
 ```powershell
